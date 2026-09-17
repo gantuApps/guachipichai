@@ -75,12 +75,33 @@
 
   form.add-form {
     display: flex;
+    flex-direction: column;
     gap: 10px;
     margin-bottom: 36px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px;
+  }
+
+  .form-row {
+    display: flex;
+    gap: 10px;
+  }
+
+  .form-row input {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .form-row-actions {
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 2px;
   }
 
   input[type="text"],
-  select {
+  input[type="url"] {
     font-family: inherit;
     font-size: 0.95rem;
     color: var(--ink);
@@ -88,18 +109,31 @@
     border: 1px solid var(--border);
     border-radius: 6px;
     padding: 11px 12px;
+    width: 100%;
   }
 
   input[type="text"]:focus,
-  select:focus {
+  input[type="url"]:focus {
     outline: none;
     border-color: var(--accent);
     box-shadow: 0 0 0 3px rgba(46, 111, 82, 0.15);
   }
 
-  .add-form input[type="text"] {
-    flex: 1;
-    min-width: 0;
+  .checkbox-field {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    color: var(--muted);
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .checkbox-field input[type="checkbox"] {
+    width: 17px;
+    height: 17px;
+    accent-color: var(--accent);
+    cursor: pointer;
   }
 
   button {
@@ -160,17 +194,31 @@
     border-bottom: 1px solid var(--border);
   }
 
+  .item-thumb {
+    width: 44px;
+    height: 44px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    object-fit: cover;
+    flex-shrink: 0;
+    background: var(--bg);
+  }
+
   .item-name {
     flex: 1;
     min-width: 0;
     overflow-wrap: break-word;
   }
 
-  .item-name .timestamp {
+  .item-owner {
     display: block;
     font-size: 0.78rem;
     color: var(--muted);
     margin-top: 2px;
+  }
+
+  .availability-toggle {
+    flex-shrink: 0;
   }
 
   .empty-state, .loading-state {
@@ -210,7 +258,7 @@
 <div class="page">
   <header>
     <h1>Item Log</h1>
-    <p>Add items, track their status, and keep the list up to date. Backed by your own Supabase project.</p>
+    <p>Add items, toggle availability, and keep the list up to date. Backed by your own Supabase project.</p>
   </header>
 
   <div id="config-banner" class="banner">
@@ -219,18 +267,23 @@
   </div>
 
   <form class="add-form" id="add-form">
-    <input type="text" id="new-name" placeholder="Item name" autocomplete="off" required>
-    <select id="new-status">
-      <option value="pending">Pending</option>
-      <option value="in_progress">In progress</option>
-      <option value="done">Done</option>
-    </select>
-    <button type="submit" class="btn-primary" id="add-button">Add</button>
+    <div class="form-row">
+      <input type="text" id="new-name" placeholder="Name" autocomplete="off" required>
+      <input type="text" id="new-owner" placeholder="Owner" autocomplete="off">
+    </div>
+    <input type="url" id="new-image" placeholder="Image URL (optional)" autocomplete="off">
+    <div class="form-row form-row-actions">
+      <label class="checkbox-field">
+        <input type="checkbox" id="new-available" checked>
+        Available
+      </label>
+      <button type="submit" class="btn-primary" id="add-button">Add</button>
+    </div>
   </form>
 
   <div class="list-heading">
     <span>Item</span>
-    <span>Status</span>
+    <span>Available</span>
   </div>
 
   <div id="list-container">
@@ -254,11 +307,15 @@
   const addForm = document.getElementById('add-form');
   const addButton = document.getElementById('add-button');
   const nameInput = document.getElementById('new-name');
-  const statusInput = document.getElementById('new-status');
+  const ownerInput = document.getElementById('new-owner');
+  const imageInput = document.getElementById('new-image');
+  const availableInput = document.getElementById('new-available');
   const configBanner = document.getElementById('config-banner');
   const toast = document.getElementById('toast');
 
-  const STATUS_LABELS = { pending: 'Pending', in_progress: 'In progress', done: 'Done' };
+  const PLACEHOLDER_SVG = 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="44" height="44"><rect width="44" height="44" fill="#e3e8e5"/><circle cx="16" cy="16" r="4" fill="#c3cbc5"/><path d="M6 32l9-11 7 8 6-7 10 12z" fill="#c3cbc5"/></svg>'
+  );
 
   let db = null;
 
@@ -285,16 +342,10 @@
     showToast._t = setTimeout(() => toast.classList.remove('visible'), 2600);
   }
 
-  function formatTimestamp(iso) {
-    const d = new Date(iso);
-    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) +
-      ' · ' + d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
-  }
-
   async function loadItems() {
     const { data, error } = await db
       .from(TABLE)
-      .select('id, name, status, created_at')
+      .select('id, name, image_url, available, owner, created_at')
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -318,19 +369,25 @@
     items.forEach((item) => {
       const li = document.createElement('li');
 
+      const img = document.createElement('img');
+      img.className = 'item-thumb';
+      img.alt = '';
+      img.src = item.image_url || PLACEHOLDER_SVG;
+      img.onerror = () => { img.onerror = null; img.src = PLACEHOLDER_SVG; };
+
       const nameWrap = document.createElement('div');
       nameWrap.className = 'item-name';
-      nameWrap.innerHTML = `${escapeHtml(item.name)}<span class="timestamp">${formatTimestamp(item.created_at)}</span>`;
+      nameWrap.innerHTML = escapeHtml(item.name) +
+        (item.owner ? `<span class="item-owner">${escapeHtml(item.owner)}</span>` : '');
 
-      const select = document.createElement('select');
-      Object.entries(STATUS_LABELS).forEach(([value, label]) => {
-        const opt = document.createElement('option');
-        opt.value = value;
-        opt.textContent = label;
-        if (value === item.status) opt.selected = true;
-        select.appendChild(opt);
-      });
-      select.addEventListener('change', () => updateStatus(item.id, select.value, select));
+      const availableLabel = document.createElement('label');
+      availableLabel.className = 'checkbox-field availability-toggle';
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.checked = Boolean(item.available);
+      checkbox.addEventListener('change', () => updateAvailable(item.id, checkbox.checked, checkbox));
+      availableLabel.appendChild(checkbox);
+      availableLabel.appendChild(document.createTextNode('Available'));
 
       const deleteBtn = document.createElement('button');
       deleteBtn.className = 'btn-ghost-danger';
@@ -338,8 +395,9 @@
       deleteBtn.textContent = 'Delete';
       deleteBtn.addEventListener('click', () => deleteItem(item.id, li));
 
+      li.appendChild(img);
       li.appendChild(nameWrap);
-      li.appendChild(select);
+      li.appendChild(availableLabel);
       li.appendChild(deleteBtn);
       ul.appendChild(li);
     });
@@ -355,8 +413,15 @@
     const name = nameInput.value.trim();
     if (!name) return;
 
+    const payload = {
+      name,
+      owner: ownerInput.value.trim() || null,
+      image_url: imageInput.value.trim() || null,
+      available: availableInput.checked,
+    };
+
     addButton.disabled = true;
-    const { error } = await db.from(TABLE).insert({ name, status: statusInput.value });
+    const { error } = await db.from(TABLE).insert(payload);
     addButton.disabled = false;
 
     if (error) {
@@ -365,22 +430,25 @@
     }
 
     nameInput.value = '';
-    statusInput.value = 'pending';
+    ownerInput.value = '';
+    imageInput.value = '';
+    availableInput.checked = true;
     nameInput.focus();
     showToast('Item added');
     loadItems();
   });
 
-  async function updateStatus(id, newStatus, selectEl) {
-    selectEl.disabled = true;
-    const { error } = await db.from(TABLE).update({ status: newStatus }).eq('id', id);
-    selectEl.disabled = false;
+  async function updateAvailable(id, value, checkboxEl) {
+    checkboxEl.disabled = true;
+    const { error } = await db.from(TABLE).update({ available: value }).eq('id', id);
+    checkboxEl.disabled = false;
 
     if (error) {
+      checkboxEl.checked = !value;
       showToast(error.message, true);
       return;
     }
-    showToast('Status updated');
+    showToast('Availability updated');
   }
 
   async function deleteItem(id, li) {
