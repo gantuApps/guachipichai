@@ -1,471 +1,263 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Item Log</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --bg: #eef2ef;
-    --surface: #ffffff;
-    --ink: #16211c;
-    --muted: #5c6b63;
-    --border: #d7ded9;
-    --accent: #2e6f52;
-    --accent-hover: #24573f;
-    --danger: #a23b2e;
-    --danger-hover: #7e2e24;
-  }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Huasipichay de Ganti y Tati</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:wght@400;500;600&display=swap');
 
-  * { box-sizing: border-box; }
+    :root {
+      --petroleo:#123f3b; --petroleo-light:#dce9e4; --night:#101b24;
+      --borgona:#6f3038; --black:#121212; --wood:#80634b;
+      --wood-light:#e7ddd1; --cream:#f4efe7; --paper:#fbf8f2;
+      --muted:#6c6861; --line:#d9d0c4;
+    }
 
-  body {
-    margin: 0;
-    background: var(--bg);
-    color: var(--ink);
-    font-family: 'IBM Plex Sans', system-ui, sans-serif;
-    font-size: 16px;
-    line-height: 1.5;
-    -webkit-font-smoothing: antialiased;
-  }
+    * { box-sizing:border-box; }
+    body {
+      margin:0; padding:24px;
+      background:#eee9e2;
+      color:var(--black);
+      font-family:"DM Sans",Arial,sans-serif;
+    }
+    .site { max-width:1000px; margin:auto; }
+    .hero {
+      position:relative; overflow:hidden;
+      background:linear-gradient(135deg,var(--night),#122d30 55%,var(--petroleo));
+      color:var(--cream); border-radius:20px;
+      padding:42px 34px 38px; border-bottom:5px solid var(--borgona);
+    }
+    .eyebrow {
+      font-size:11px; letter-spacing:.20em; text-transform:uppercase;
+      color:#c8d7d0; margin-bottom:13px;
+    }
+    h1 {
+      font-family:"Cormorant Garamond",Georgia,serif;
+      font-size:clamp(43px,8vw,72px); font-weight:500;
+      line-height:.92; letter-spacing:-.025em; max-width:720px; margin:0 0 19px;
+    }
+    .subtitle { max-width:620px; font-size:16px; line-height:1.65; color:#e3e9e5; }
+    .code-detail {
+      display:inline-block; margin-top:18px; padding:6px 10px;
+      border:1px solid rgba(255,255,255,.16); border-radius:6px;
+      font-family:monospace; font-size:11px; color:#a8c2b8; background:rgba(0,0,0,.15);
+    }
+    .botanical {
+      position:absolute; right:22px; bottom:-18px; font:86px Georgia,serif;
+      color:#a5c3b8; opacity:.12; transform:rotate(-12deg);
+    }
+    .intro {
+      margin:30px 0 18px; display:flex; justify-content:space-between;
+      align-items:end; gap:20px;
+    }
+    .intro p { margin:0; max-width:650px; color:var(--muted); font-size:14px; line-height:1.6; }
+    .count {
+      flex-shrink:0; padding:8px 13px; border-radius:999px;
+      background:var(--petroleo-light); color:var(--petroleo);
+      font-size:12px; font-weight:600;
+    }
+    .grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
+    .gift {
+      position:relative; overflow:hidden; display:flex; flex-direction:column;
+      background:var(--paper); border:1px solid var(--line); border-radius:15px;
+      transition:transform .18s ease,border-color .18s ease;
+    }
+    .gift:hover { transform:translateY(-2px); border-color:#a8b8af; }
+    .photo {
+      height:165px; position:relative; display:flex; align-items:center; justify-content:center;
+      overflow:hidden; background:linear-gradient(135deg,#ddd2c3,#c6b6a4);
+      color:var(--night); font-size:46px;
+    }
+    .photo span {
+      position:absolute; z-index:2; bottom:9px; left:11px;
+      font:9px monospace; letter-spacing:.08em; text-transform:uppercase;
+      color:rgba(18,18,18,.45);
+    }
+    .giftbody { padding:17px; }
+    .gift h3 {
+      margin:0 0 8px; font:600 24px/1 "Cormorant Garamond",Georgia,serif;
+    }
+    .recommendation {
+      min-height:43px; margin-bottom:14px; color:var(--muted);
+      font-size:12px; line-height:1.55;
+    }
+    .recommendation strong { color:var(--petroleo); font-weight:600; }
+    button {
+      width:100%; min-height:44px; padding:10px 14px; border:0; border-radius:8px;
+      font:500 13px "DM Sans",Arial,sans-serif; cursor:pointer;
+    }
+    .reserve { background:var(--petroleo); color:white; }
+    .chosen { background:var(--wood-light); color:var(--wood); cursor:default; }
+    .footer {
+      margin-top:24px; padding:28px 22px; border-top:1px solid var(--line);
+      text-align:center; color:var(--muted); font-size:14px; line-height:1.65;
+    }
+    .footer strong { color:var(--borgona); font-weight:600; }
+    .modalwrap {
+      position:fixed; inset:0; z-index:10; display:none; align-items:center; justify-content:center;
+      padding:18px; background:rgba(16,27,36,.68);
+    }
+    .modal {
+      width:100%; max-width:430px; padding:27px; background:var(--paper);
+      border-top:5px solid var(--borgona); border-radius:14px;
+    }
+    .modal h2 { margin:0 0 10px; font:600 30px "Cormorant Garamond",Georgia,serif; }
+    .modal p { margin:0 0 20px; color:var(--muted); font-size:14px; line-height:1.55; }
+    .modalactions { display:flex; gap:10px; }
+    .modalactions button { flex:1; }
+    .cancel { background:var(--wood-light); color:var(--wood); }
+    .confirm { background:var(--borgona); color:white; }
 
-  .page {
-    max-width: 640px;
-    margin: 0 auto;
-    padding: 56px 24px 96px;
-  }
-
-  header h1 {
-    font-family: 'Fraunces', serif;
-    font-style: italic;
-    font-weight: 500;
-    font-size: 2.5rem;
-    margin: 0 0 8px;
-    letter-spacing: -0.01em;
-  }
-
-  header p {
-    margin: 0 0 40px;
-    color: var(--muted);
-    max-width: 46ch;
-  }
-
-  .banner {
-    display: none;
-    background: #fbeceA;
-    border: 1px solid #e3b8ae;
-    color: var(--danger);
-    padding: 14px 16px;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    margin-bottom: 28px;
-  }
-
-  .banner.visible { display: block; }
-
-  .banner code {
-    background: rgba(0,0,0,0.06);
-    padding: 1px 5px;
-    border-radius: 3px;
-    font-size: 0.85em;
-  }
-
-  form.add-form {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-bottom: 36px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 18px;
-  }
-
-  .form-row {
-    display: flex;
-    gap: 10px;
-  }
-
-  .form-row input {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .form-row-actions {
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 2px;
-  }
-
-  input[type="text"],
-  input[type="url"] {
-    font-family: inherit;
-    font-size: 0.95rem;
-    color: var(--ink);
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 11px 12px;
-    width: 100%;
-  }
-
-  input[type="text"]:focus,
-  input[type="url"]:focus {
-    outline: none;
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(46, 111, 82, 0.15);
-  }
-
-  .checkbox-field {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.9rem;
-    color: var(--muted);
-    cursor: pointer;
-    user-select: none;
-  }
-
-  .checkbox-field input[type="checkbox"] {
-    width: 17px;
-    height: 17px;
-    accent-color: var(--accent);
-    cursor: pointer;
-  }
-
-  button {
-    font-family: inherit;
-    font-size: 0.95rem;
-    font-weight: 500;
-    border: none;
-    border-radius: 6px;
-    padding: 11px 18px;
-    cursor: pointer;
-  }
-
-  button:disabled {
-    opacity: 0.55;
-    cursor: default;
-  }
-
-  .btn-primary {
-    background: var(--accent);
-    color: #fff;
-  }
-
-  .btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
-
-  .btn-ghost-danger {
-    background: transparent;
-    color: var(--danger);
-    padding: 8px 10px;
-  }
-
-  .btn-ghost-danger:hover:not(:disabled) {
-    background: rgba(162, 59, 46, 0.08);
-    color: var(--danger-hover);
-  }
-
-  .list-heading {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    border-bottom: 1px solid var(--border);
-    padding-bottom: 10px;
-    margin-bottom: 4px;
-    color: var(--muted);
-    font-size: 0.8rem;
-  }
-
-  ul.items {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-
-  ul.items li {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 16px 0;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .item-thumb {
-    width: 44px;
-    height: 44px;
-    border-radius: 6px;
-    border: 1px solid var(--border);
-    object-fit: cover;
-    flex-shrink: 0;
-    background: var(--bg);
-  }
-
-  .item-name {
-    flex: 1;
-    min-width: 0;
-    overflow-wrap: break-word;
-  }
-
-  .item-owner {
-    display: block;
-    font-size: 0.78rem;
-    color: var(--muted);
-    margin-top: 2px;
-  }
-
-  .availability-toggle {
-    flex-shrink: 0;
-  }
-
-  .empty-state, .loading-state {
-    color: var(--muted);
-    padding: 28px 0;
-  }
-
-  .toast {
-    position: fixed;
-    bottom: 24px;
-    left: 50%;
-    transform: translateX(-50%) translateY(12px);
-    background: var(--ink);
-    color: #fff;
-    padding: 10px 18px;
-    border-radius: 6px;
-    font-size: 0.88rem;
-    opacity: 0;
-    transition: opacity 0.2s ease, transform 0.2s ease;
-    pointer-events: none;
-  }
-
-  .toast.visible {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
-
-  .toast.error { background: var(--danger); }
-
-  @media (prefers-reduced-motion: reduce) {
-    .toast { transition: none; }
-  }
-</style>
+    @media(max-width:700px) {
+      body { padding:12px; }
+      .hero { padding:32px 23px; }
+      .grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .intro { align-items:flex-start; flex-direction:column; }
+      .count { align-self:flex-start; }
+    }
+    @media(max-width:450px) {
+      .grid { grid-template-columns:1fr; }
+      .photo { height:180px; }
+    }
+  </style>
 </head>
+
 <body>
+  <main class="site">
 
-<div class="page">
-  <header>
-    <h1>Item Log</h1>
-    <p>Add items, toggle availability, and keep the list up to date. Backed by your own Supabase project.</p>
-  </header>
+    <section class="hero">
+      <div class="eyebrow">¡Finalmente! Se armó el...</div>
+      <h1>Huasipichay de Ganti y Tati</h1>
+      <div class="subtitle">
+        Sillas no hay pero ganas de compartir sí.
+        No tienes que traer regalos peeerooo... :P
+        si quieres te dejamos algunas sugerencias.
+      </div>
+      <div class="code-detail">invitation.exe → running successfully</div>
+      <div class="botanical">❧</div>
+    </section>
 
-  <div id="config-banner" class="banner">
-    This page is still using placeholder Supabase credentials. Open the file and set
-    <code>SUPABASE_URL</code> and <code>SUPABASE_ANON_KEY</code> near the bottom, then reload.
-  </div>
+    <section class="intro">
+      <div>
+        <p>
+          Cositas tranqui para nuestra casa como lavadora,
+          nevera, home theater... naahhhh mentiritas XD...
+        </p>
+      </div>
+      <div class="count" id="count">0 regalos elegidos</div>
+    </section>
 
-  <form class="add-form" id="add-form">
-    <div class="form-row">
-      <input type="text" id="new-name" placeholder="Name" autocomplete="off" required>
-      <input type="text" id="new-owner" placeholder="Owner" autocomplete="off">
+    <section class="grid" id="gifts"></section>
+
+    <div class="footer">
+      <strong>Si nada de la lista te llamó la atención, tú tranqui:</strong><br>
+      llega con una botella de trago y siempre serás bienvenido.
     </div>
-    <input type="url" id="new-image" placeholder="Image URL (optional)" autocomplete="off">
-    <div class="form-row form-row-actions">
-      <label class="checkbox-field">
-        <input type="checkbox" id="new-available" checked>
-        Available
-      </label>
-      <button type="submit" class="btn-primary" id="add-button">Add</button>
+  </main>
+
+  <div class="modalwrap" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal">
+      <h2 id="modalTitle">¿Quieres regalar esto?</h2>
+      <p>
+        Una vez confirmado, este regalo quedará reservado y ya no estará disponible
+        para otras personas.
+      </p>
+      <div class="modalactions">
+        <button type="button" class="cancel" id="cancel">Mejor no</button>
+        <button type="button" class="confirm" id="confirm">Sí, lo regalo</button>
+      </div>
     </div>
-  </form>
-
-  <div class="list-heading">
-    <span>Item</span>
-    <span>Available</span>
   </div>
 
-  <div id="list-container">
-    <p class="loading-state">Loading items…</p>
-  </div>
-</div>
+  <script>
+    (() => {
+      const gifts = [
+        {id:1,name:"Cafetera espresso",icon:"☕",desc:"Negro, acero inoxidable o vidrio."},
+        {id:2,name:"Set de copas",icon:"🥂",desc:"Vidrio transparente o ahumado."},
+        {id:3,name:"Olla de hierro",icon:"🍲",desc:"Hierro fundido, preferiblemente negro."},
+        {id:4,name:"Juego de toallas",icon:"▤",desc:"Algodón, blanco, gris, negro o verde oscuro."},
+        {id:5,name:"Espejo decorativo",icon:"◯",desc:"Marco negro, metal o madera oscura."},
+        {id:6,name:"Lámpara de mesa",icon:"◉",desc:"Luz cálida, metal negro o vidrio."},
+        {id:7,name:"Juego de sábanas",icon:"▱",desc:"Algodón, gris, negro, blanco o verde oscuro."},
+        {id:8,name:"Tabla para servir",icon:"▰",desc:"Madera natural, piedra o metal negro."},
+        {id:9,name:"Organizador de cocina",icon:"▦",desc:"Madera natural, metal negro o plástico ahumado."}
+      ];
 
-<div id="toast" class="toast"></div>
+      let selected = null;
+      const chosen = new Set();
+      const giftsEl = document.getElementById("gifts");
+      const modal = document.getElementById("modal");
+      const count = document.getElementById("count");
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-  // ---- 1. Fill these in with your own project's values (Project Settings -> API) ----
-  const SUPABASE_URL = 'YOUR_SUPABASE_URL';
-  const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
-  // -------------------------------------------------------------------------------
+      function render() {
+        giftsEl.innerHTML = "";
 
-  const TABLE = 'items';
-  const isConfigured = SUPABASE_URL !== 'YOUR_SUPABASE_URL' && SUPABASE_ANON_KEY !== 'YOUR_SUPABASE_ANON_KEY';
+        gifts.forEach(gift => {
+          const card = document.createElement("article");
+          card.className = "gift";
 
-  const listContainer = document.getElementById('list-container');
-  const addForm = document.getElementById('add-form');
-  const addButton = document.getElementById('add-button');
-  const nameInput = document.getElementById('new-name');
-  const ownerInput = document.getElementById('new-owner');
-  const imageInput = document.getElementById('new-image');
-  const availableInput = document.getElementById('new-available');
-  const configBanner = document.getElementById('config-banner');
-  const toast = document.getElementById('toast');
+          const alreadyChosen = chosen.has(gift.id);
 
-  const PLACEHOLDER_SVG = 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(
-    '<svg xmlns="http://www.w3.org/2000/svg" width="44" height="44"><rect width="44" height="44" fill="#e3e8e5"/><circle cx="16" cy="16" r="4" fill="#c3cbc5"/><path d="M6 32l9-11 7 8 6-7 10 12z" fill="#c3cbc5"/></svg>'
-  );
+          card.innerHTML = `
+            <div class="photo" aria-label="Fotografía de ${gift.name}">
+              ${gift.icon}
+              <span>regalo-${String(gift.id).padStart(2,"0")}.jpg</span>
+            </div>
 
-  let db = null;
+            <div class="giftbody">
+              <h3>${gift.name}</h3>
 
-  if (!isConfigured) {
-    configBanner.classList.add('visible');
-    listContainer.innerHTML = '<p class="empty-state">Add your Supabase credentials to connect.</p>';
-  } else {
-    const { createClient } = supabase;
-    db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    loadItems();
-  }
+              <div class="recommendation">
+                <strong>Recomendación:</strong>
+                ${gift.desc}
+              </div>
 
-  function escapeHtml(str) {
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
-  }
+              <button
+                type="button"
+                class="${alreadyChosen ? "chosen" : "reserve"}"
+                ${alreadyChosen ? "disabled" : ""}
+              >
+                ${alreadyChosen ? "♥ Ya elegido" : "Quiero regalar esto"}
+              </button>
+            </div>
+          `;
 
-  function showToast(message, isError) {
-    toast.textContent = message;
-    toast.classList.toggle('error', Boolean(isError));
-    toast.classList.add('visible');
-    clearTimeout(showToast._t);
-    showToast._t = setTimeout(() => toast.classList.remove('visible'), 2600);
-  }
+          if (!alreadyChosen) {
+            card.querySelector("button").addEventListener("click", () => {
+              selected = gift;
+              modal.style.display = "flex";
+              document.getElementById("confirm").focus();
+            });
+          }
 
-  async function loadItems() {
-    const { data, error } = await db
-      .from(TABLE)
-      .select('id, name, image_url, available, owner, created_at')
-      .order('created_at', { ascending: false });
+          giftsEl.appendChild(card);
+        });
 
-    if (error) {
-      listContainer.innerHTML = '<p class="empty-state">Couldn\'t reach Supabase. Double-check the project URL, anon key, and that the table exists.</p>';
-      showToast(error.message, true);
-      return;
-    }
+        count.textContent =
+          `${chosen.size} ${chosen.size === 1 ? "regalo elegido" : "regalos elegidos"}`;
+      }
 
-    renderItems(data);
-  }
+      function closeModal() {
+        modal.style.display = "none";
+        selected = null;
+      }
 
-  function renderItems(items) {
-    if (!items.length) {
-      listContainer.innerHTML = '<p class="empty-state">No items yet — add one above.</p>';
-      return;
-    }
+      document.getElementById("confirm").addEventListener("click", () => {
+        if (!selected) return;
+        chosen.add(selected.id);
+        closeModal();
+        render();
+      });
 
-    const ul = document.createElement('ul');
-    ul.className = 'items';
+      document.getElementById("cancel").addEventListener("click", closeModal);
 
-    items.forEach((item) => {
-      const li = document.createElement('li');
+      modal.addEventListener("click", event => {
+        if (event.target === modal) closeModal();
+      });
 
-      const img = document.createElement('img');
-      img.className = 'item-thumb';
-      img.alt = '';
-      img.src = item.image_url || PLACEHOLDER_SVG;
-      img.onerror = () => { img.onerror = null; img.src = PLACEHOLDER_SVG; };
-
-      const nameWrap = document.createElement('div');
-      nameWrap.className = 'item-name';
-      nameWrap.innerHTML = escapeHtml(item.name) +
-        (item.owner ? `<span class="item-owner">${escapeHtml(item.owner)}</span>` : '');
-
-      const availableLabel = document.createElement('label');
-      availableLabel.className = 'checkbox-field availability-toggle';
-      const checkbox = document.createElement('input');
-      checkbox.type = 'checkbox';
-      checkbox.checked = Boolean(item.available);
-      checkbox.addEventListener('change', () => updateAvailable(item.id, checkbox.checked, checkbox));
-      availableLabel.appendChild(checkbox);
-      availableLabel.appendChild(document.createTextNode('Available'));
-
-      const deleteBtn = document.createElement('button');
-      deleteBtn.className = 'btn-ghost-danger';
-      deleteBtn.type = 'button';
-      deleteBtn.textContent = 'Delete';
-      deleteBtn.addEventListener('click', () => deleteItem(item.id, li));
-
-      li.appendChild(img);
-      li.appendChild(nameWrap);
-      li.appendChild(availableLabel);
-      li.appendChild(deleteBtn);
-      ul.appendChild(li);
-    });
-
-    listContainer.innerHTML = '';
-    listContainer.appendChild(ul);
-  }
-
-  addForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    if (!db) return;
-
-    const name = nameInput.value.trim();
-    if (!name) return;
-
-    const payload = {
-      name,
-      owner: ownerInput.value.trim() || null,
-      image_url: imageInput.value.trim() || null,
-      available: availableInput.checked,
-    };
-
-    addButton.disabled = true;
-    const { error } = await db.from(TABLE).insert(payload);
-    addButton.disabled = false;
-
-    if (error) {
-      showToast(error.message, true);
-      return;
-    }
-
-    nameInput.value = '';
-    ownerInput.value = '';
-    imageInput.value = '';
-    availableInput.checked = true;
-    nameInput.focus();
-    showToast('Item added');
-    loadItems();
-  });
-
-  async function updateAvailable(id, value, checkboxEl) {
-    checkboxEl.disabled = true;
-    const { error } = await db.from(TABLE).update({ available: value }).eq('id', id);
-    checkboxEl.disabled = false;
-
-    if (error) {
-      checkboxEl.checked = !value;
-      showToast(error.message, true);
-      return;
-    }
-    showToast('Availability updated');
-  }
-
-  async function deleteItem(id, li) {
-    if (!confirm('Delete this item?')) return;
-
-    const { error } = await db.from(TABLE).delete().eq('id', id);
-    if (error) {
-      showToast(error.message, true);
-      return;
-    }
-    li.remove();
-    showToast('Item deleted');
-    if (!document.querySelector('ul.items li')) {
-      listContainer.innerHTML = '<p class="empty-state">No items yet — add one above.</p>';
-    }
-  }
-</script>
-
+      render();
+    })();
+  </script>
 </body>
 </html>
