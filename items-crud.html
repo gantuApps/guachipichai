@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Item Log</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #eef2ef;
+    --surface: #ffffff;
+    --ink: #16211c;
+    --muted: #5c6b63;
+    --border: #d7ded9;
+    --accent: #2e6f52;
+    --accent-hover: #24573f;
+    --danger: #a23b2e;
+    --danger-hover: #7e2e24;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 56px 24px 96px;
+  }
+
+  header h1 {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 500;
+    font-size: 2.5rem;
+    margin: 0 0 8px;
+    letter-spacing: -0.01em;
+  }
+
+  header p {
+    margin: 0 0 40px;
+    color: var(--muted);
+    max-width: 46ch;
+  }
+
+  .banner {
+    display: none;
+    background: #fbeceA;
+    border: 1px solid #e3b8ae;
+    color: var(--danger);
+    padding: 14px 16px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    margin-bottom: 28px;
+  }
+
+  .banner.visible { display: block; }
+
+  .banner code {
+    background: rgba(0,0,0,0.06);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 0.85em;
+  }
+
+  form.add-form {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 36px;
+  }
+
+  input[type="text"],
+  select {
+    font-family: inherit;
+    font-size: 0.95rem;
+    color: var(--ink);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 11px 12px;
+  }
+
+  input[type="text"]:focus,
+  select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(46, 111, 82, 0.15);
+  }
+
+  .add-form input[type="text"] {
+    flex: 1;
+    min-width: 0;
+  }
+
+  button {
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 500;
+    border: none;
+    border-radius: 6px;
+    padding: 11px 18px;
+    cursor: pointer;
+  }
+
+  button:disabled {
+    opacity: 0.55;
+    cursor: default;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
+
+  .btn-ghost-danger {
+    background: transparent;
+    color: var(--danger);
+    padding: 8px 10px;
+  }
+
+  .btn-ghost-danger:hover:not(:disabled) {
+    background: rgba(162, 59, 46, 0.08);
+    color: var(--danger-hover);
+  }
+
+  .list-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 10px;
+    margin-bottom: 4px;
+    color: var(--muted);
+    font-size: 0.8rem;
+  }
+
+  ul.items {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  ul.items li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .item-name {
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: break-word;
+  }
+
+  .item-name .timestamp {
+    display: block;
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .empty-state, .loading-state {
+    color: var(--muted);
+    padding: 28px 0;
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(12px);
+    background: var(--ink);
+    color: #fff;
+    padding: 10px 18px;
+    border-radius: 6px;
+    font-size: 0.88rem;
+    opacity: 0;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    pointer-events: none;
+  }
+
+  .toast.visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .toast.error { background: var(--danger); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .toast { transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <header>
+    <h1>Item Log</h1>
+    <p>Add items, track their status, and keep the list up to date. Backed by your own Supabase project.</p>
+  </header>
+
+  <div id="config-banner" class="banner">
+    This page is still using placeholder Supabase credentials. Open the file and set
+    <code>SUPABASE_URL</code> and <code>SUPABASE_ANON_KEY</code> near the bottom, then reload.
+  </div>
+
+  <form class="add-form" id="add-form">
+    <input type="text" id="new-name" placeholder="Item name" autocomplete="off" required>
+    <select id="new-status">
+      <option value="pending">Pending</option>
+      <option value="in_progress">In progress</option>
+      <option value="done">Done</option>
+    </select>
+    <button type="submit" class="btn-primary" id="add-button">Add</button>
+  </form>
+
+  <div class="list-heading">
+    <span>Item</span>
+    <span>Status</span>
+  </div>
+
+  <div id="list-container">
+    <p class="loading-state">Loading items…</p>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  // ---- 1. Fill these in with your own project's values (Project Settings -> API) ----
+  const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+  const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+  // -------------------------------------------------------------------------------
+
+  const TABLE = 'items';
+  const isConfigured = SUPABASE_URL !== 'YOUR_SUPABASE_URL' && SUPABASE_ANON_KEY !== 'YOUR_SUPABASE_ANON_KEY';
+
+  const listContainer = document.getElementById('list-container');
+  const addForm = document.getElementById('add-form');
+  const addButton = document.getElementById('add-button');
+  const nameInput = document.getElementById('new-name');
+  const statusInput = document.getElementById('new-status');
+  const configBanner = document.getElementById('config-banner');
+  const toast = document.getElementById('toast');
+
+  const STATUS_LABELS = { pending: 'Pending', in_progress: 'In progress', done: 'Done' };
+
+  let db = null;
+
+  if (!isConfigured) {
+    configBanner.classList.add('visible');
+    listContainer.innerHTML = '<p class="empty-state">Add your Supabase credentials to connect.</p>';
+  } else {
+    const { createClient } = supabase;
+    db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    loadItems();
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function showToast(message, isError) {
+    toast.textContent = message;
+    toast.classList.toggle('error', Boolean(isError));
+    toast.classList.add('visible');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(() => toast.classList.remove('visible'), 2600);
+  }
+
+  function formatTimestamp(iso) {
+    const d = new Date(iso);
+    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) +
+      ' · ' + d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+  }
+
+  async function loadItems() {
+    const { data, error } = await db
+      .from(TABLE)
+      .select('id, name, status, created_at')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      listContainer.innerHTML = '<p class="empty-state">Couldn\'t reach Supabase. Double-check the project URL, anon key, and that the table exists.</p>';
+      showToast(error.message, true);
+      return;
+    }
+
+    renderItems(data);
+  }
+
+  function renderItems(items) {
+    if (!items.length) {
+      listContainer.innerHTML = '<p class="empty-state">No items yet — add one above.</p>';
+      return;
+    }
+
+    const ul = document.createElement('ul');
+    ul.className = 'items';
+
+    items.forEach((item) => {
+      const li = document.createElement('li');
+
+      const nameWrap = document.createElement('div');
+      nameWrap.className = 'item-name';
+      nameWrap.innerHTML = `${escapeHtml(item.name)}<span class="timestamp">${formatTimestamp(item.created_at)}</span>`;
+
+      const select = document.createElement('select');
+      Object.entries(STATUS_LABELS).forEach(([value, label]) => {
+        const opt = document.createElement('option');
+        opt.value = value;
+        opt.textContent = label;
+        if (value === item.status) opt.selected = true;
+        select.appendChild(opt);
+      });
+      select.addEventListener('change', () => updateStatus(item.id, select.value, select));
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.className = 'btn-ghost-danger';
+      deleteBtn.type = 'button';
+      deleteBtn.textContent = 'Delete';
+      deleteBtn.addEventListener('click', () => deleteItem(item.id, li));
+
+      li.appendChild(nameWrap);
+      li.appendChild(select);
+      li.appendChild(deleteBtn);
+      ul.appendChild(li);
+    });
+
+    listContainer.innerHTML = '';
+    listContainer.appendChild(ul);
+  }
+
+  addForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!db) return;
+
+    const name = nameInput.value.trim();
+    if (!name) return;
+
+    addButton.disabled = true;
+    const { error } = await db.from(TABLE).insert({ name, status: statusInput.value });
+    addButton.disabled = false;
+
+    if (error) {
+      showToast(error.message, true);
+      return;
+    }
+
+    nameInput.value = '';
+    statusInput.value = 'pending';
+    nameInput.focus();
+    showToast('Item added');
+    loadItems();
+  });
+
+  async function updateStatus(id, newStatus, selectEl) {
+    selectEl.disabled = true;
+    const { error } = await db.from(TABLE).update({ status: newStatus }).eq('id', id);
+    selectEl.disabled = false;
+
+    if (error) {
+      showToast(error.message, true);
+      return;
+    }
+    showToast('Status updated');
+  }
+
+  async function deleteItem(id, li) {
+    if (!confirm('Delete this item?')) return;
+
+    const { error } = await db.from(TABLE).delete().eq('id', id);
+    if (error) {
+      showToast(error.message, true);
+      return;
+    }
+    li.remove();
+    showToast('Item deleted');
+    if (!document.querySelector('ul.items li')) {
+      listContainer.innerHTML = '<p class="empty-state">No items yet — add one above.</p>';
+    }
+  }
+</script>
+
+</body>
+</html>
