@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Huasipichay de Ganti y Tati</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:wght@400;500;600&display=swap');
+
+    :root {
+      --petroleo:#123f3b; --petroleo-light:#dce9e4; --night:#101b24;
+      --borgona:#6f3038; --black:#121212; --wood:#80634b;
+      --wood-light:#e7ddd1; --cream:#f4efe7; --paper:#fbf8f2;
+      --muted:#6c6861; --line:#d9d0c4;
+    }
+
+    * { box-sizing:border-box; }
+    body {
+      margin:0; padding:24px;
+      background:#eee9e2;
+      color:var(--black);
+      font-family:"DM Sans",Arial,sans-serif;
+    }
+    .site { max-width:1000px; margin:auto; }
+    .hero {
+      position:relative; overflow:hidden;
+      background:linear-gradient(135deg,var(--night),#122d30 55%,var(--petroleo));
+      color:var(--cream); border-radius:20px;
+      padding:42px 34px 38px; border-bottom:5px solid var(--borgona);
+    }
+    .eyebrow {
+      font-size:11px; letter-spacing:.20em; text-transform:uppercase;
+      color:#c8d7d0; margin-bottom:13px;
+    }
+    h1 {
+      font-family:"Cormorant Garamond",Georgia,serif;
+      font-size:clamp(43px,8vw,72px); font-weight:500;
+      line-height:.92; letter-spacing:-.025em; max-width:720px; margin:0 0 19px;
+    }
+    .subtitle { max-width:620px; font-size:16px; line-height:1.65; color:#e3e9e5; }
+    .code-detail {
+      display:inline-block; margin-top:18px; padding:6px 10px;
+      border:1px solid rgba(255,255,255,.16); border-radius:6px;
+      font-family:monospace; font-size:11px; color:#a8c2b8; background:rgba(0,0,0,.15);
+    }
+    .botanical {
+      position:absolute; right:22px; bottom:-18px; font:86px Georgia,serif;
+      color:#a5c3b8; opacity:.12; transform:rotate(-12deg);
+    }
+    .banner {
+      display:none;
+      margin:22px 0 0; padding:14px 16px; border-radius:10px;
+      background:rgba(111,48,56,.08); border:1px solid rgba(111,48,56,.25);
+      color:var(--borgona); font-size:13px; line-height:1.5;
+    }
+    .banner.visible { display:block; }
+    .banner code {
+      background:rgba(0,0,0,.06); padding:1px 5px; border-radius:4px;
+      font-family:monospace; font-size:0.85em;
+    }
+    .intro {
+      margin:30px 0 18px; display:flex; justify-content:space-between;
+      align-items:end; gap:20px;
+    }
+    .intro p { margin:0; max-width:650px; color:var(--muted); font-size:14px; line-height:1.6; }
+    .count {
+      flex-shrink:0; padding:8px 13px; border-radius:999px;
+      background:var(--petroleo-light); color:var(--petroleo);
+      font-size:12px; font-weight:600;
+    }
+    .grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
+    .empty-state {
+      grid-column:1/-1; text-align:center; color:var(--muted);
+      padding:40px 0; font-size:14px;
+    }
+    .gift {
+      position:relative; overflow:hidden; display:flex; flex-direction:column;
+      background:var(--paper); border:1px solid var(--line); border-radius:15px;
+      transition:transform .18s ease,border-color .18s ease;
+    }
+    .gift:hover { transform:translateY(-2px); border-color:#a8b8af; }
+    .photo {
+      height:165px; position:relative; display:flex; align-items:center; justify-content:center;
+      overflow:hidden; background:linear-gradient(135deg,#ddd2c3,#c6b6a4);
+      color:var(--night); font-size:46px;
+    }
+    .photo img {
+      position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
+    }
+    .photo span {
+      position:absolute; z-index:2; bottom:9px; left:11px;
+      font:9px monospace; letter-spacing:.08em; text-transform:uppercase;
+      color:rgba(18,18,18,.45);
+    }
+    .giftbody { padding:17px; display:flex; flex-direction:column; flex:1; }
+    .gift h3 {
+      margin:0 0 14px; font:600 24px/1 "Cormorant Garamond",Georgia,serif;
+    }
+    button {
+      width:100%; min-height:44px; padding:10px 14px; border:0; border-radius:8px;
+      font:500 13px "DM Sans",Arial,sans-serif; cursor:pointer; margin-top:auto;
+    }
+    .reserve { background:var(--petroleo); color:white; }
+    .chosen { background:var(--wood-light); color:var(--wood); cursor:default; }
+    .footer {
+      margin-top:24px; padding:28px 22px; border-top:1px solid var(--line);
+      text-align:center; color:var(--muted); font-size:14px; line-height:1.65;
+    }
+    .footer strong { color:var(--borgona); font-weight:600; }
+    .modalwrap {
+      position:fixed; inset:0; z-index:10; display:none; align-items:center; justify-content:center;
+      padding:18px; background:rgba(16,27,36,.68);
+    }
+    .modal {
+      width:100%; max-width:430px; padding:27px; background:var(--paper);
+      border-top:5px solid var(--borgona); border-radius:14px;
+    }
+    .modal h2 { margin:0 0 10px; font:600 30px "Cormorant Garamond",Georgia,serif; }
+    .modal p { margin:0 0 20px; color:var(--muted); font-size:14px; line-height:1.55; }
+    .modal-error { margin:-10px 0 16px; min-height:1em; color:var(--borgona); font-size:13px; }
+    .modalactions { display:flex; gap:10px; }
+    .modalactions button { flex:1; margin-top:0; }
+    .cancel { background:var(--wood-light); color:var(--wood); }
+    .confirm { background:var(--borgona); color:white; }
+    .confirm:disabled { opacity:.6; cursor:default; }
+
+    @media(max-width:700px) {
+      body { padding:12px; }
+      .hero { padding:32px 23px; }
+      .grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .intro { align-items:flex-start; flex-direction:column; }
+      .count { align-self:flex-start; }
+    }
+    @media(max-width:450px) {
+      .grid { grid-template-columns:1fr; }
+      .photo { height:180px; }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="site">
+
+    <section class="hero">
+      <div class="eyebrow">¡Finalmente! Se armó el...</div>
+      <h1>Huasipichay de Ganti y Tati</h1>
+      <div class="subtitle">
+        Sillas no hay pero ganas de compartir sí.
+        No tienes que traer regalos peeerooo... :P
+        si quieres te dejamos algunas sugerencias.
+      </div>
+      <div class="code-detail">invitation.exe → running successfully</div>
+      <div class="botanical">❧</div>
+    </section>
+
+    <div class="banner" id="config-banner">
+      Esta página aún no tiene credenciales de Supabase. Abre el archivo y completa
+      <code>SUPABASE_URL</code> y <code>SUPABASE_ANON_KEY</code> en el script, luego recarga.
+    </div>
+
+    <section class="intro">
+      <div>
+        <p>
+          Cositas tranqui para nuestra casa como lavadora,
+          nevera, home theater... naahhhh mentiritas XD...
+        </p>
+      </div>
+      <div class="count" id="count">0 regalos elegidos</div>
+    </section>
+
+    <section class="grid" id="gifts">
+      <p class="empty-state">Cargando…</p>
+    </section>
+
+    <div class="footer">
+      <strong>Si nada de la lista te llamó la atención, tú tranqui:</strong><br>
+      llega con una botella de trago y siempre serás bienvenido.
+    </div>
+  </main>
+
+  <div class="modalwrap" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal">
+      <h2 id="modalTitle">¿Quieres regalar esto?</h2>
+      <p>
+        Una vez confirmado, este regalo quedará reservado y ya no estará disponible
+        para otras personas.
+      </p>
+      <p class="modal-error" id="modal-error"></p>
+      <div class="modalactions">
+        <button type="button" class="cancel" id="cancel">Mejor no</button>
+        <button type="button" class="confirm" id="confirm">Sí, lo regalo</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    (() => {
+      // ---- Fill these in with your own project's values (Project Settings -> API) ----
+      const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+      const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+      // -------------------------------------------------------------------------------
+
+      const TABLE = 'items';
+      const isConfigured = SUPABASE_URL !== 'YOUR_SUPABASE_URL' && SUPABASE_ANON_KEY !== 'YOUR_SUPABASE_ANON_KEY';
+
+      const giftsEl = document.getElementById("gifts");
+      const modal = document.getElementById("modal");
+      const count = document.getElementById("count");
+      const configBanner = document.getElementById("config-banner");
+      const modalError = document.getElementById("modal-error");
+      const confirmBtn = document.getElementById("confirm");
+
+      let db = null;
+      let items = [];
+      let selected = null;
+
+      function closeModal() {
+        modal.style.display = "none";
+        selected = null;
+        modalError.textContent = "";
+      }
+
+      function render() {
+        giftsEl.innerHTML = "";
+
+        if (!items.length) {
+          giftsEl.innerHTML = '<p class="empty-state">Aún no hay regalos en la lista.</p>';
+        } else {
+          items.forEach((gift, index) => {
+            const alreadyChosen = !gift.available;
+
+            const card = document.createElement("article");
+            card.className = "gift";
+
+            const photo = document.createElement("div");
+            photo.className = "photo";
+            photo.setAttribute("aria-label", `Fotografía de ${gift.name}`);
+
+            if (gift.image_url) {
+              const img = document.createElement("img");
+              img.src = gift.image_url;
+              img.alt = "";
+              img.addEventListener("error", () => img.remove());
+              photo.appendChild(img);
+            } else {
+              photo.appendChild(document.createTextNode("🎁"));
+            }
+
+            const tag = document.createElement("span");
+            tag.textContent = `regalo-${String(index + 1).padStart(2, "0")}.jpg`;
+            photo.appendChild(tag);
+
+            const body = document.createElement("div");
+            body.className = "giftbody";
+
+            const h3 = document.createElement("h3");
+            h3.textContent = gift.name;
+
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = alreadyChosen ? "chosen" : "reserve";
+            button.textContent = alreadyChosen ? "♥ Ya elegido" : "Quiero regalar esto";
+
+            if (alreadyChosen) {
+              button.disabled = true;
+            } else {
+              button.addEventListener("click", () => {
+                selected = gift;
+                modalError.textContent = "";
+                modal.style.display = "flex";
+                confirmBtn.focus();
+              });
+            }
+
+            body.appendChild(h3);
+            body.appendChild(button);
+            card.appendChild(photo);
+            card.appendChild(body);
+            giftsEl.appendChild(card);
+          });
+        }
+
+        const chosenCount = items.filter(g => !g.available).length;
+        count.textContent =
+          `${chosenCount} ${chosenCount === 1 ? "regalo elegido" : "regalos elegidos"}`;
+      }
+
+      async function loadItems() {
+        const { data, error } = await db
+          .from(TABLE)
+          .select('id, name, image_url, available, created_at')
+          .order('created_at', { ascending: true });
+
+        if (error) {
+          giftsEl.innerHTML = '<p class="empty-state">No se pudo cargar la lista. Intenta de nuevo más tarde.</p>';
+          return;
+        }
+
+        items = data;
+        render();
+      }
+
+      if (!isConfigured) {
+        configBanner.classList.add("visible");
+        giftsEl.innerHTML = '<p class="empty-state">Configura las credenciales de Supabase para ver la lista.</p>';
+      } else {
+        const { createClient } = supabase;
+        db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        loadItems();
+      }
+
+      confirmBtn.addEventListener("click", async () => {
+        if (!selected || !db) return;
+
+        confirmBtn.disabled = true;
+        const { error } = await db.from(TABLE).update({ available: false }).eq("id", selected.id);
+        confirmBtn.disabled = false;
+
+        if (error) {
+          modalError.textContent = "No se pudo reservar el regalo. Intenta de nuevo.";
+          return;
+        }
+
+        closeModal();
+        loadItems();
+      });
+
+      document.getElementById("cancel").addEventListener("click", closeModal);
+
+      modal.addEventListener("click", event => {
+        if (event.target === modal) closeModal();
+      });
+    })();
+  </script>
+</body>
+</html>
