@@ -397,7 +397,7 @@
     const { data, error } = await db
       .from(TABLE)
       .select('id, name, image_url, available, owner, created_at')
-      .order('created_at', { ascending: false });
+      .order('name', { ascending: false });
 
     if (error) {
       listContainer.innerHTML = '<p class="empty-state">Couldn\'t reach Supabase. Double-check the project URL, anon key, and that the table exists.</p>';
