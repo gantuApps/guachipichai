@@ -291,7 +291,7 @@
         const { data, error } = await db
           .from(TABLE)
           .select('id, name, image_url, available, created_at')
-          .order('created_at', { ascending: true });
+          .order('name', { ascending: true });
 
         if (error) {
           giftsEl.innerHTML = '<p class="empty-state">No se pudo cargar la lista. Intenta de nuevo más tarde.</p>';
