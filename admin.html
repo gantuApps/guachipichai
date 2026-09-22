@@ -221,6 +221,51 @@
     flex-shrink: 0;
   }
 
+  .item-actions {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+
+  .btn-ghost:hover:not(:disabled) {
+    background: var(--bg);
+  }
+
+  .btn-small {
+    padding: 8px 14px;
+    font-size: 0.85rem;
+  }
+
+  ul.items li.editing {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .edit-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .edit-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+
+  .list-heading-right {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
   .empty-state, .loading-state {
     color: var(--muted);
     padding: 28px 0;
@@ -283,7 +328,10 @@
 
   <div class="list-heading">
     <span>Item</span>
-    <span>Available</span>
+    <div class="list-heading-right">
+      <span>Available</span>
+      <button type="button" class="btn-ghost btn-small" id="refresh-button">Refresh</button>
+    </div>
   </div>
 
   <div id="list-container">
@@ -312,12 +360,15 @@
   const availableInput = document.getElementById('new-available');
   const configBanner = document.getElementById('config-banner');
   const toast = document.getElementById('toast');
+  const refreshButton = document.getElementById('refresh-button');
 
   const PLACEHOLDER_SVG = 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(
     '<svg xmlns="http://www.w3.org/2000/svg" width="44" height="44"><rect width="44" height="44" fill="#e3e8e5"/><circle cx="16" cy="16" r="4" fill="#c3cbc5"/><path d="M6 32l9-11 7 8 6-7 10 12z" fill="#c3cbc5"/></svg>'
   );
 
   let db = null;
+  let editingId = null;
+  let currentItems = [];
 
   if (!isConfigured) {
     configBanner.classList.add('visible');
@@ -358,6 +409,8 @@
   }
 
   function renderItems(items) {
+    currentItems = items;
+
     if (!items.length) {
       listContainer.innerHTML = '<p class="empty-state">No items yet — add one above.</p>';
       return;
@@ -369,41 +422,133 @@
     items.forEach((item) => {
       const li = document.createElement('li');
 
-      const img = document.createElement('img');
-      img.className = 'item-thumb';
-      img.alt = '';
-      img.src = item.image_url || PLACEHOLDER_SVG;
-      img.onerror = () => { img.onerror = null; img.src = PLACEHOLDER_SVG; };
+      if (item.id === editingId) {
+        li.classList.add('editing');
+        buildEditRow(li, item);
+      } else {
+        buildDisplayRow(li, item);
+      }
 
-      const nameWrap = document.createElement('div');
-      nameWrap.className = 'item-name';
-      nameWrap.innerHTML = escapeHtml(item.name) +
-        (item.owner ? `<span class="item-owner">${escapeHtml(item.owner)}</span>` : '');
-
-      const availableLabel = document.createElement('label');
-      availableLabel.className = 'checkbox-field availability-toggle';
-      const checkbox = document.createElement('input');
-      checkbox.type = 'checkbox';
-      checkbox.checked = Boolean(item.available);
-      checkbox.addEventListener('change', () => updateAvailable(item.id, checkbox.checked, checkbox));
-      availableLabel.appendChild(checkbox);
-      availableLabel.appendChild(document.createTextNode('Available'));
-
-      const deleteBtn = document.createElement('button');
-      deleteBtn.className = 'btn-ghost-danger';
-      deleteBtn.type = 'button';
-      deleteBtn.textContent = 'Delete';
-      deleteBtn.addEventListener('click', () => deleteItem(item.id, li));
-
-      li.appendChild(img);
-      li.appendChild(nameWrap);
-      li.appendChild(availableLabel);
-      li.appendChild(deleteBtn);
       ul.appendChild(li);
     });
 
     listContainer.innerHTML = '';
     listContainer.appendChild(ul);
+  }
+
+  function buildDisplayRow(li, item) {
+    const img = document.createElement('img');
+    img.className = 'item-thumb';
+    img.alt = '';
+    img.src = item.image_url || PLACEHOLDER_SVG;
+    img.onerror = () => { img.onerror = null; img.src = PLACEHOLDER_SVG; };
+
+    const nameWrap = document.createElement('div');
+    nameWrap.className = 'item-name';
+    nameWrap.innerHTML = escapeHtml(item.name) +
+      (item.owner ? `<span class="item-owner">${escapeHtml(item.owner)}</span>` : '');
+
+    const availableLabel = document.createElement('label');
+    availableLabel.className = 'checkbox-field availability-toggle';
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.checked = Boolean(item.available);
+    checkbox.addEventListener('change', () => updateAvailable(item.id, checkbox.checked, checkbox));
+    availableLabel.appendChild(checkbox);
+    availableLabel.appendChild(document.createTextNode('Available'));
+
+    const actions = document.createElement('div');
+    actions.className = 'item-actions';
+
+    const editBtn = document.createElement('button');
+    editBtn.type = 'button';
+    editBtn.className = 'btn-ghost btn-small';
+    editBtn.textContent = 'Edit';
+    editBtn.addEventListener('click', () => {
+      editingId = item.id;
+      renderItems(currentItems);
+    });
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'btn-ghost-danger';
+    deleteBtn.type = 'button';
+    deleteBtn.textContent = 'Delete';
+    deleteBtn.addEventListener('click', () => deleteItem(item.id, li));
+
+    actions.appendChild(editBtn);
+    actions.appendChild(deleteBtn);
+
+    li.appendChild(img);
+    li.appendChild(nameWrap);
+    li.appendChild(availableLabel);
+    li.appendChild(actions);
+  }
+
+  function buildEditRow(li, item) {
+    const fields = document.createElement('div');
+    fields.className = 'edit-fields';
+
+    const nameField = document.createElement('input');
+    nameField.type = 'text';
+    nameField.placeholder = 'Name';
+    nameField.value = item.name;
+
+    const imageField = document.createElement('input');
+    imageField.type = 'url';
+    imageField.placeholder = 'Image URL';
+    imageField.value = item.image_url || '';
+
+    fields.appendChild(nameField);
+    fields.appendChild(imageField);
+
+    const actions = document.createElement('div');
+    actions.className = 'edit-actions';
+
+    const cancelBtn = document.createElement('button');
+    cancelBtn.type = 'button';
+    cancelBtn.className = 'btn-ghost btn-small';
+    cancelBtn.textContent = 'Cancel';
+    cancelBtn.addEventListener('click', () => {
+      editingId = null;
+      renderItems(currentItems);
+    });
+
+    const saveBtn = document.createElement('button');
+    saveBtn.type = 'button';
+    saveBtn.className = 'btn-primary btn-small';
+    saveBtn.textContent = 'Save';
+    saveBtn.addEventListener('click', async () => {
+      const newName = nameField.value.trim();
+      if (!newName) {
+        showToast('Name is required', true);
+        return;
+      }
+
+      saveBtn.disabled = true;
+      cancelBtn.disabled = true;
+
+      const { error } = await db
+        .from(TABLE)
+        .update({ name: newName, image_url: imageField.value.trim() || null })
+        .eq('id', item.id);
+
+      if (error) {
+        saveBtn.disabled = false;
+        cancelBtn.disabled = false;
+        showToast(error.message, true);
+        return;
+      }
+
+      editingId = null;
+      showToast('Item updated');
+      loadItems();
+    });
+
+    actions.appendChild(cancelBtn);
+    actions.appendChild(saveBtn);
+
+    li.appendChild(fields);
+    li.appendChild(actions);
   }
 
   addForm.addEventListener('submit', async (e) => {
@@ -465,6 +610,16 @@
       listContainer.innerHTML = '<p class="empty-state">No items yet — add one above.</p>';
     }
   }
+
+  refreshButton.addEventListener('click', async () => {
+    if (!db) return;
+    refreshButton.disabled = true;
+    const originalLabel = refreshButton.textContent;
+    refreshButton.textContent = 'Refreshing…';
+    await loadItems();
+    refreshButton.disabled = false;
+    refreshButton.textContent = originalLabel;
+  });
 </script>
 
 </body>
